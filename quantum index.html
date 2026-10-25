@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Quantum Analytics Pro · Terminal de Socios</title>
+  <meta name="description" content="Terminal de socios con datos simulados con fines demostrativos. No constituye asesoramiento financiero.">
+  <meta name="theme-color" content="#030712">
+  <meta name="color-scheme" content="dark">
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Quantum Pro">
+
+  <style>
+    :root {
+      --bg-main: #030712;
+      --bg-surface: #0b1220;
+      --bg-raised: #131c2e;
+      --cyan: #06b6d4;
+      --emerald: #10b981;
+      --rose: #f43f5e;
+      --text-main: #f1f5f9;
+      --text-sub: #8b9bb4;
+      --line: rgba(148, 163, 184, 0.14);
+      --whatsapp: #25d366;
+      --telegram: #0088cc;
+      --radius: 8px;
+      --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    [hidden] { display: none !important; }
+    html { -webkit-text-size-adjust: 100%; background: var(--bg-main); }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: var(--text-main);
+      background-color: var(--bg-main);
+      background-image:
+        radial-gradient(ellipse at 100% -20%, rgba(6, 182, 212, 0.12), transparent 55%),
+        radial-gradient(ellipse at 0% 110%, rgba(244, 63, 94, 0.07), transparent 50%);
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding: calc(env(safe-area-inset-top) + 18px) 18px calc(env(safe-area-inset-bottom) + 36px);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button, input, textarea { font: inherit; color: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, input:focus-visible, textarea:focus-visible {
+      outline: 2px solid var(--cyan);
+      outline-offset: 2px;
+    }
+    button:active { transform: scale(0.985); }
+
+    .app {
+      max-width: 520px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Cabecera */
+    .masthead {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 12px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+    .masthead h1 {
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      color: var(--cyan);
+      text-shadow: 0 0 18px rgba(6, 182, 212, 0.3);
+    }
+    .masthead p {
+      font-size: 0.78rem;
+      color: var(--text-sub);
+      margin-top: 2px;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.7rem;
+      color: var(--emerald);
+      white-space: nowrap;
+    }
+    .status .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--emerald);
+      box-shadow: 0 0 8px var(--emerald);
+      animation: latido 2.4s ease-in-out infinite;
+    }
+    .status.offline { color: var(--text-sub); }
+    .status.offline .dot { background: var(--text-sub); box-shadow: none; animation: none; }
+    @keyframes latido {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.35; }
+    }
+
+    /* Aviso legal */
+    .aviso {
+      margin-top: 16px;
+      padding: 12px 14px;
+      border-left: 3px solid var(--rose);
+      background: rgba(244, 63, 94, 0.06);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      font-size: 0.78rem;
+      color: #fecdd3;
+      line-height: 1.5;
+    }
+    .aviso strong { color: var(--rose); font-weight: 700; }
+
+    .btn-instalar {
+      margin-top: 12px;
+      width: 100%;
+      padding: 12px;
+      background: transparent;
+      border: 1px dashed var(--cyan);
+      border-radius: var(--radius);
+      color: var(--cyan);
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+
+    /* Secciones */
+    .seccion {
+      padding: 20px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .seccion:last-of-type { border-bottom: none; }
+    .seccion-titulo {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .seccion-sub {
+      font-size: 0.74rem;
+      color: var(--text-sub);
+      margin-bottom: 12px;
+    }
+
+    /* Calendario macro de ejemplo */
+    .calendario { display: flex; flex-direction: column; }
+    .calendario-fila {
+      display: grid;
+      grid-template-columns: 52px 1fr auto;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      font-size: 0.8rem;
+    }
+    .calendario-fila + .calendario-fila { border-top: 1px solid var(--line); }
+    .hora {
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      color: var(--cyan);
+      font-weight: 600;
+    }
+    .evento b { font-weight: 700; color: var(--text-main); }
+    .impacto {
+      font-size: 0.66rem;
+      font-weight: 700;
+      padding: 3px 7px;
+      border-radius: 4px;
+      border: 1px solid;
+      white-space: nowrap;
+    }
+    .impacto.alto { color: var(--rose); border-color: rgba(244, 63, 94, 0.5); background: rgba(244, 63, 94, 0.08); }
+    .impacto.medio { color: var(--text-sub); border-color: var(--line); }
+
+    /* Consulta */
+    .prompt {
+      display: flex;
+      align-items: stretch;
+      gap: 8px;
+    }
+    .prompt-entrada {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 12px;
+      background: var(--bg-raised);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+    .prompt-entrada:focus-within { border-color: var(--cyan); }
+    .prompt-entrada span {
+      font-family: var(--mono);
+      color: var(--cyan);
+      font-weight: 700;
+    }
+    .prompt-entrada input {
+      flex: 1;
+      min-width: 0;
+      padding: 12px 0;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-size: 16px; /* evita el zoom automático en iOS */
+    }
+    .prompt-entrada input::placeholder { color: #5b6b82; }
+    .btn-primario {
+      padding: 0 16px;
+      background: var(--cyan);
+      color: #03141c;
+      border: none;
+      border-radius: var(--radius);
+      font-weight: 800;
+      font-size: 0.8rem;
+    }
+
+    .respuesta {
+      margin-top: 14px;
+      padding: 14px;
+      background: var(--bg-surface);
+      border-left: 2px solid var(--cyan);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      font-size: 0.82rem;
+    }
+    .respuesta p + p { margin-top: 6px; }
+    .respuesta-item + .respuesta-item {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+    .respuesta-cabecera {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .respuesta-cabecera strong { font-size: 0.9rem; }
+    .respuesta .riesgo { color: var(--text-sub); font-size: 0.76rem; }
+    .respuesta .nota {
+      margin-top: 12px;
+      font-size: 0.68rem;
+      color: var(--text-sub);
+      font-style: italic;
+    }
+
+    /* Sesgos (distintivos, no decorativos) */
+    .sesgo {
+      font-size: 0.64rem;
+      font-weight: 700;
+      padding: 3px 7px;
+      border-radius: 4px;
+      border: 1px solid;
+      text-transform: none;
+      white-space: nowrap;
+    }
+    .sesgo.BUY { color: var(--emerald); border-color: rgba(16, 185, 129, 0.5); background: rgba(16, 185, 129, 0.08); }
+    .sesgo.SELL { color: var(--rose); border-color: rgba(244, 63, 94, 0.5); background: rgba(244, 63, 94, 0.08); }
+    .sesgo.WAIT { color: var(--text-sub); border-color: var(--line); background: transparent; }
+
+    /* Señales */
+    .senal {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+    }
+    .senal + .senal { border-top: 1px solid var(--line); }
+    .senal-nombre { font-weight: 700; font-size: 0.9rem; }
+    .senal-resumen { font-size: 0.72rem; color: var(--text-sub); margin-top: 2px; }
+    .senal-acciones {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+    }
+    .btn-copiar {
+      padding: 4px 9px;
+      background: transparent;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      font-size: 0.68rem;
+      font-weight: 600;
+    }
+    .btn-copiar:active { background: var(--cyan); color: #03141c; border-color: var(--cyan); }
+
+    /* Bitácora */
+    .notas {
+      width: 100%;
+      min-height: 72px;
+      resize: vertical;
+      padding: 12px;
+      background: var(--bg-raised);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      font-size: 16px;
+      line-height: 1.5;
+    }
+    .notas:focus { outline: none; border-color: var(--rose); }
+    .notas::placeholder { color: #5b6b82; }
+
+    .media {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .btn-media {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 12px 4px;
+      background: var(--bg-raised);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+    .btn-media:active { border-color: var(--rose); }
+    .btn-media span { font-size: 1.1rem; }
+
+    .adjuntos {
+      list-style: none;
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .adjuntos:empty { display: none; }
+    .adjunto {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px;
+      background: var(--bg-raised);
+      border-radius: var(--radius);
+      font-size: 0.76rem;
+    }
+    .adjunto-visual {
+      width: 40px;
+      height: 40px;
+      flex-shrink: 0;
+      border-radius: 6px;
+      display: grid;
+      place-items: center;
+      background: rgba(6, 182, 212, 0.1);
+      font-size: 1rem;
+    }
+    .adjunto-visual img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+    .adjunto-info { flex: 1; min-width: 0; }
+    .adjunto-nombre {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-weight: 600;
+    }
+    .adjunto-meta { font-size: 0.68rem; color: var(--text-sub); }
+    .btn-quitar {
+      padding: 4px 8px;
+      background: none;
+      border: none;
+      color: var(--text-sub);
+      font-size: 1rem;
+    }
+    .btn-quitar:active { color: var(--rose); }
+
+    .privacidad {
+      margin-top: 10px;
+      font-size: 0.7rem;
+      color: var(--text-sub);
+    }
+
+    .compartir {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .btn-compartir {
+      padding: 12px;
+      border: none;
+      border-radius: var(--radius);
+      font-weight: 800;
+      font-size: 0.78rem;
+      letter-spacing: 0.02em;
+    }
+    .btn-wa { background: var(--whatsapp); color: #052e16; }
+    .btn-tg { background: var(--telegram); color: #ffffff; }
+
+    /* Pie */
+    .pie {
+      padding-top: 20px;
+      font-size: 0.68rem;
+      color: var(--text-sub);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      text-align: center;
+    }
+
+    /* Notificación */
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(env(safe-area-inset-bottom) + 20px);
+      transform: translateX(-50%) translateY(8px);
+      max-width: calc(100% - 32px);
+      padding: 10px 14px;
+      background: var(--bg-raised);
+      border: 1px solid var(--cyan);
+      border-radius: var(--radius);
+      font-size: 0.8rem;
+      text-align: center;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+    .toast.visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .status .dot { animation: none; }
+      .toast { transition: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app">
+
+    <header class="masthead">
+      <div>
+        <h1>QUANTUM ANALYTICS PRO</h1>
+        <p>Terminal de socios y monitor de riesgo</p>
+      </div>
+      <div id="estado" class="status" role="status">
+        <span class="dot" aria-hidden="true"></span>
+        <span id="estado-texto">Comprobando conexión</span>
+      </div>
+    </header>
+
+    <div class="aviso" role="note">
+      <strong>Aviso importante.</strong> Todos los datos de esta aplicación son simulaciones con fines demostrativos. No constituyen asesoramiento financiero, recomendación de inversión ni oferta de compra o venta de ningún activo. Invertir conlleva riesgo, incluida la pérdida total del capital.
+    </div>
+
+    <button id="btn-instalar" class="btn-instalar" type="button" onclick="instalarApp()" hidden>Instalar aplicación en este dispositivo</button>
+
+    <section class="seccion" aria-labelledby="titulo-calendario">
+      <h2 id="titulo-calendario" class="seccion-titulo">Calendario macro de ejemplo</h2>
+      <p class="seccion-sub">Eventos ficticios para la demostración. No es un calendario oficial.</p>
+      <div class="calendario">
+        <div class="calendario-fila">
+          <span class="hora">14:30</span>
+          <span class="evento"><b>[USD]</b> Índice de precios PCE</span>
+          <span class="impacto alto">Alto</span>
+        </div>
+        <div class="calendario-fila">
+          <span class="hora">11:00</span>
+          <span class="evento"><b>[EUR]</b> Tasa de desempleo de la eurozona</span>
+          <span class="impacto medio">Medio</span>
+        </div>
+        <div class="calendario-fila">
+          <span class="hora">16:45</span>
+          <span class="evento"><b>[USD]</b> Comparecencia del presidente de la Reserva Federal</span>
+          <span class="impacto alto">Alto</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="seccion" aria-labelledby="titulo-consulta">
+      <h2 id="titulo-consulta" class="seccion-titulo">Consulta al analista simulado</h2>
+      <p class="seccion-sub">Respuestas predefinidas que se generan en tu dispositivo.</p>
+      <div class="prompt">
+        <label class="prompt-entrada">
+          <span aria-hidden="true">&gt;</span>
+          <input type="text" id="query" placeholder="Prueba con oro, Tesla, EUR/USD…" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Activo a consultar">
+        </label>
+        <button type="button" class="btn-primario" onclick="consultarSocio()">Consultar</button>
+      </div>
+      <div id="response-area" class="respuesta" aria-live="polite" hidden></div>
+    </section>
+
+    <section class="seccion" aria-labelledby="titulo-senales">
+      <h2 id="titulo-senales" class="seccion-titulo">Señales simuladas de referencia</h2>
+      <p class="seccion-sub">Escenarios ficticios. Ninguna señal es una recomendación.</p>
+      <div id="senales"></div>
+    </section>
+
+    <section class="seccion" aria-labelledby="titulo-bitacora">
+      <h2 id="titulo-bitacora" class="seccion-titulo">Bitácora compartida</h2>
+      <p class="seccion-sub">Notas de operativa y adjuntos de la sesión.</p>
+
+      <textarea id="notas" class="notas" rows="3" placeholder="Escribe notas de operativa o describe una captura…" aria-label="Notas de la bitácora"></textarea>
+
+      <div class="media">
+        <button type="button" class="btn-media" onclick="document.getElementById('captura-input').click()"><span aria-hidden="true">📸</span>Capturas</button>
+        <button type="button" class="btn-media" onclick="document.getElementById('video-input').click()"><span aria-hidden="true">🎥</span>Vídeos</button>
+        <button type="button" class="btn-media" onclick="document.getElementById('documento-input').click()"><span aria-hidden="true">📄</span>Documentos</button>
+      </div>
+
+      <input type="file" id="captura-input" accept="image/*" hidden onchange="adjuntarArchivo(this, 'captura')">
+      <input type="file" id="video-input" accept="video/*" hidden onchange="adjuntarArchivo(this, 'video')">
+      <input type="file" id="documento-input" accept=".pdf,.csv,.xlsx,.xls,.txt,.doc,.docx" hidden onchange="adjuntarArchivo(this, 'documento')">
+
+      <ul id="adjuntos" class="adjuntos" aria-live="polite"></ul>
+      <p class="privacidad">Los adjuntos solo existen en esta sesión y no se suben a ningún servidor.</p>
+
+      <div class="compartir">
+        <button type="button" class="btn-compartir btn-wa" onclick="compartirNota('whatsapp')">Enviar por WhatsApp</button>
+        <button type="button" class="btn-compartir btn-tg" onclick="compartirNota('telegram')">Enviar por Telegram</button>
+      </div>
+    </section>
+
+    <footer class="pie">
+      <p>Simulación con fines demostrativos. No constituye asesoramiento financiero.</p>
+      <p>Versión 1.0.0 · Tras la primera carga funciona sin conexión.</p>
+      <p>En iPhone: Compartir → Añadir a pantalla de inicio.</p>
+    </footer>
+
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    // =====================================================================
+    // Datos simulados. No proceden de ningún mercado real.
+    // =====================================================================
+    const ESCENARIOS = [
+      {
+        claves: ['oro', 'gold', 'xau'],
+        activo: 'Oro (XAU/USD)',
+        sesgo: 'BUY',
+        resumen: 'Demanda de refugio simulada',
+        lectura: 'Escenario simulado: la demanda de refugio da soporte al metal mientras los tipos reales se mantienen contenidos.',
+        riesgo: 'Riesgo simulado: un repunte de los tipos reales o un dólar más fuerte podría presionar el precio.'
+      },
+      {
+        claves: ['tesla', 'tsla'],
+        activo: 'Tesla (TSLA)',
+        sesgo: 'WAIT',
+        resumen: 'Volatilidad alta simulada',
+        lectura: 'Escenario simulado: volatilidad elevada en torno a la publicación de resultados. Sesgo neutral a la espera de confirmación.',
+        riesgo: 'Riesgo simulado: movimientos bruscos de precio en ambas direcciones.'
+      },
+      {
+        claves: ['eur/usd', 'eurusd', 'eur'],
+        activo: 'EUR/USD',
+        sesgo: 'SELL',
+        resumen: 'Diferencial de tipos simulado',
+        lectura: 'Escenario simulado: un diferencial de tipos favorable al dólar inclina el sesgo a la baja para el euro.',
+        riesgo: 'Riesgo simulado: un cambio inesperado en la política monetaria de cualquiera de las dos zonas.'
+      },
+      {
+        claves: ['petroleo', 'crudo', 'brent', 'wti', 'oil'],
+        activo: 'Petróleo (Brent)',
+        sesgo: 'WAIT',
+        resumen: 'Oferta y demanda equilibradas',
+        lectura: 'Escenario simulado: oferta y demanda en equilibrio. Sesgo neutral a la espera del dato semanal de inventarios.',
+        riesgo: 'Riesgo simulado: tensiones geopolíticas o decisiones de producción pueden provocar saltos de precio.'
+      },
+      {
+        claves: ['s&p', 's&p500', 'sp500', 'nasdaq', 'bolsa'],
+        activo: 'S&P 500',
+        sesgo: 'BUY',
+        resumen: 'Tendencia alcista simulada',
+        lectura: 'Escenario simulado: tendencia alcista con amplitud de mercado moderada y resultados empresariales estables.',
+        riesgo: 'Riesgo simulado: una corrección repentina si los datos macroeconómicos salen peor de lo esperado.'
+      }
+    ];
+
+    const ETIQUETAS_SESGO = { BUY: 'Alcista', SELL: 'Bajista', WAIT: 'Neutral' };
+    const ETIQUETAS_ADJUNTO = { captura: 'Captura de gráfico', video: 'Vídeo', documento: 'Documento' };
+    const ICONOS_ADJUNTO = { captura: '📸', video: '🎥', documento: '📄' };
+    const MAX_ADJUNTOS = 30;
+    const CLAVE_NOTAS = 'qap-bitacora-v1';
+    const DISCLAIMER = 'Simulación con fines demostrativos. No constituye asesoramiento financiero.';
+
+    const byId = (id) => document.getElementById(id);
+
+    // =====================================================================
+    // Consulta simulada
+    // =====================================================================
+    function normalizarTexto(texto) {
+      return texto
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[¿?¡!,;:()"'.]/g, ' ')
+        .trim();
+    }
+
+    function buscarEscenarios(texto) {
+      const tokens = normalizarTexto(texto).split(/\s+/).filter(Boolean);
+      return ESCENARIOS.filter((e) => e.claves.some((clave) => tokens.includes(clave)));
+    }
+
+    function crearBadge(sesgo) {
+      const badge = document.createElement('span');
+      badge.className = 'sesgo ' + sesgo;
+      badge.textContent = ETIQUETAS_SESGO[sesgo] + ' (sim.)';
+      return badge;
+    }
+
+    function crearBloqueRespuesta(escenario) {
+      const bloque = document.createElement('div');
+      bloque.className = 'respuesta-item';
+
+      const cabecera = document.createElement('div');
+      cabecera.className = 'respuesta-cabecera';
+      const titulo = document.createElement('strong');
+      titulo.textContent = escenario.activo;
+      cabecera.append(titulo, crearBadge(escenario.sesgo));
+
+      const lectura = document.createElement('p');
+      lectura.textContent = escenario.lectura;
+
+      const riesgo = document.createElement('p');
+      riesgo.className = 'riesgo';
+      riesgo.textContent = escenario.riesgo;
+
+      bloque.append(cabecera, lectura, riesgo);
+      return bloque;
+    }
+
+    function mostrarMensajeConsulta(area, mensaje) {
+      const p = document.createElement('p');
+      p.textContent = mensaje;
+      area.appendChild(p);
+    }
+
+    function consultarSocio() {
+      const input = byId('query');
+      const area = byId('response-area');
+      const texto = input.value.trim();
+
+      area.textContent = '';
+      area.hidden = false;
+
+      if (!texto) {
+        mostrarMensajeConsulta(area, 'Escribe un activo para consultar, por ejemplo: oro, Tesla o EUR/USD.');
+        return;
+      }
+
+      const coincidencias = buscarEscenarios(texto);
+      if (coincidencias.length === 0) {
+        mostrarMensajeConsulta(area, 'No hay una simulación para esa consulta. Prueba con: oro, Tesla, EUR/USD, petróleo o S&P 500.');
+        return;
+      }
+
+      coincidencias.forEach((escenario) => area.appendChild(crearBloqueRespuesta(escenario)));
+
+      const nota = document.createElement('p');
+      nota.className = 'nota';
+      nota.textContent = DISCLAIMER;
+      area.appendChild(nota);
+    }
+
+    // =====================================================================
+    // Señales de referencia
+    // =====================================================================
+    function renderSenales() {
+      const contenedor = byId('senales');
+      contenedor.textContent = '';
+
+      ESCENARIOS.forEach((escenario) => {
+        const fila = document.createElement('div');
+        fila.className = 'senal';
+
+        const info = document.createElement('div');
+        const nombre = document.createElement('div');
+        nombre.className = 'senal-nombre';
+        nombre.textContent = escenario.activo;
+        const resumen = document.createElement('div');
+        resumen.className = 'senal-resumen';
+        resumen.textContent = escenario.resumen;
+        info.append(nombre, resumen);
+
+        const acciones = document.createElement('div');
+        acciones.className = 'senal-acciones';
+        const copiar = document.createElement('button');
+        copiar.type = 'button';
+        copiar.className = 'btn-copiar';
+        copiar.textContent = 'Copiar';
+        copiar.addEventListener('click', () => copiarTexto(
+          escenario.activo + ': ' + escenario.lectura + ' ' + escenario.riesgo + ' (' + DISCLAIMER + ')'
+        ));
+        acciones.append(crearBadge(escenario.sesgo), copiar);
+
+        fila.append(info, acciones);
+        contenedor.appendChild(fila);
+      });
+    }
+
+    async function copiarTexto(texto) {
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(texto);
+        } else {
+          const temporal = document.createElement('textarea');
+          temporal.value = texto;
+          temporal.setAttribute('readonly', '');
+          temporal.style.position = 'fixed';
+          temporal.style.opacity = '0';
+          document.body.appendChild(temporal);
+          temporal.select();
+          document.execCommand('copy');
+          temporal.remove();
+        }
+        mostrarToast('Copiado al portapapeles');
+      } catch (error) {
+        mostrarToast('No se pudo copiar');
+      }
+    }
+
+    // =====================================================================
+    // Bitácora y adjuntos (solo en memoria; nada se sube a un servidor)
+    // =====================================================================
+    const adjuntos = [];
+    let siguienteId = 1;
+
+    function formatearTamano(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(1).replace('.', ',') + ' MB';
+    }
+
+    function adjuntarArchivo(input, tipo) {
+      const archivos = Array.from(input.files || []);
+      input.value = '';
+      if (archivos.length === 0) return;
+
+      let descartados = 0;
+      archivos.forEach((archivo) => {
+        if (adjuntos.length >= MAX_ADJUNTOS) {
+          descartados++;
+          return;
+        }
+        const esImagen = archivo.type.startsWith('image/');
+        adjuntos.push({
+          id: siguienteId++,
+          tipo: tipo,
+          nombre: archivo.name,
+          tamano: archivo.size,
+          miniatura: esImagen ? URL.createObjectURL(archivo) : null
+        });
+      });
+
+      renderAdjuntos();
+
+      if (descartados > 0) {
+        mostrarToast('Límite de ' + MAX_ADJUNTOS + ' adjuntos alcanzado');
+      } else {
+        mostrarToast(archivos.length === 1 ? 'Archivo adjuntado' : archivos.length + ' archivos adjuntados');
+      }
+    }
+
+    function renderAdjuntos() {
+      const lista = byId('adjuntos');
+      lista.textContent = '';
+
+      adjuntos.forEach((adjunto) => {
+        const elemento = document.createElement('li');
+        elemento.className = 'adjunto';
+
+        const visual = document.createElement('div');
+        visual.className = 'adjunto-visual';
+        if (adjunto.miniatura) {
+          const img = document.createElement('img');
+          img.src = adjunto.miniatura;
+          img.alt = '';
+          visual.appendChild(img);
+        } else {
+          visual.textContent = ICONOS_ADJUNTO[adjunto.tipo];
+        }
+
+        const info = document.createElement('div');
+        info.className = 'adjunto-info';
+        const nombre = document.createElement('div');
+        nombre.className = 'adjunto-nombre';
+        nombre.textContent = adjunto.nombre;
+        const meta = document.createElement('div');
+        meta.className = 'adjunto-meta';
+        meta.textContent = ETIQUETAS_ADJUNTO[adjunto.tipo] + ' · ' + formatearTamano(adjunto.tamano);
+        info.append(nombre, meta);
+
+        const quitar = document.createElement('button');
+        quitar.type = 'button';
+        quitar.className = 'btn-quitar';
+        quitar.setAttribute('aria-label', 'Quitar ' + adjunto.nombre);
+        quitar.textContent = '✕';
+        quitar.addEventListener('click', () => quitarAdjunto(adjunto.id));
+
+        elemento.append(visual, info, quitar);
+        lista.appendChild(elemento);
+      });
+    }
+
+    function quitarAdjunto(id) {
+      const indice = adjuntos.findIndex((a) => a.id === id);
+      if (indice === -1) return;
+      const [retirado] = adjuntos.splice(indice, 1);
+      if (retirado.miniatura) URL.revokeObjectURL(retirado.miniatura);
+      renderAdjuntos();
+    }
+
+    function guardarNotas() {
+      try {
+        localStorage.setItem(CLAVE_NOTAS, byId('notas').value);
+      } catch (error) {
+        // Almacenamiento no disponible: las notas siguen en pantalla durante la sesión.
+      }
+    }
+
+    function cargarNotas() {
+      try {
+        const guardado = localStorage.getItem(CLAVE_NOTAS);
+        if (guardado !== null) byId('notas').value = guardado;
+      } catch (error) {
+        // Sin almacenamiento disponible, se empieza con la bitácora vacía.
+      }
+    }
+
+    function compartirNota(canal) {
+      const notas = byId('notas').value.trim();
+      const partes = ['Bitácora · Quantum Analytics Pro. ' + DISCLAIMER];
+      if (notas) partes.push(notas);
+      if (adjuntos.length > 0) {
+        const lineas = adjuntos.map((a) => '- ' + ETIQUETAS_ADJUNTO[a.tipo] + ': ' + a.nombre);
+        partes.push('Adjuntos (solo en este dispositivo):\n' + lineas.join('\n'));
+      }
+      const texto = partes.join('\n\n');
+
+      const url = canal === 'whatsapp'
+        ? 'https://wa.me/?text=' + encodeURIComponent(texto)
+        : 'https://t.me/share/url?url=' + encodeURIComponent(location.href) + '&text=' + encodeURIComponent(texto);
+
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+
+    // =====================================================================
+    // Estado de conexión, notificaciones e instalación
+    // =====================================================================
+    let toastTimer = null;
+    function mostrarToast(mensaje) {
+      const toast = byId('toast');
+      toast.textContent = mensaje;
+      toast.classList.add('visible');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('visible'), 2200);
+    }
+
+    function actualizarEstadoRed() {
+      const estado = byId('estado');
+      const texto = byId('estado-texto');
+      const enLinea = navigator.onLine;
+      estado.classList.toggle('offline', !enLinea);
+      texto.textContent = enLinea ? 'En línea' : 'Sin conexión · modo offline';
+    }
+
+    let eventoInstalacion = null;
+
+    function instalarApp() {
+      if (!eventoInstalacion) return;
+      eventoInstalacion.prompt();
+      eventoInstalacion.userChoice
+        .catch(() => {})
+        .finally(() => {
+          eventoInstalacion = null;
+          byId('btn-instalar').hidden = true;
+        });
+    }
+
+    // =====================================================================
+    // Inicialización
+    // =====================================================================
+    cargarNotas();
+    renderSenales();
+    actualizarEstadoRed();
+
+    byId('notas').addEventListener('input', guardarNotas);
+    byId('query').addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') consultarSocio();
+    });
+
+    window.addEventListener('online', actualizarEstadoRed);
+    window.addEventListener('offline', actualizarEstadoRed);
+
+    window.addEventListener('beforeinstallprompt', (event) => {
+      event.preventDefault();
+      eventoInstalacion = event;
+      byId('btn-instalar').hidden = false;
+    });
+
+    window.addEventListener('appinstalled', () => {
+      eventoInstalacion = null;
+      byId('btn-instalar').hidden = true;
+      mostrarToast('Aplicación instalada');
+    });
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .catch((error) => console.warn('Service Worker no registrado:', error));
+      });
+    }
+  </script>
+</body>
+</html>
