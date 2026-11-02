@@ -1,0 +1,18 @@
+{
+  "name": "quantum-analytics-pro",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace @quantum-analytics/web",
+    "dev:api": "npm run dev --workspace @quantum-analytics/api",
+    "build": "npm run build --workspace @quantum-analytics/web",
+    "lint": "npm run lint --workspace @quantum-analytics/web",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down"
+  },
+  "engines": {
+    "node": ">=18.18.0"
+  }
+}
